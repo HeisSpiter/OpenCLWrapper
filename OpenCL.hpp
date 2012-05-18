@@ -50,6 +50,30 @@ private:
     /// List of devices that are in the current context
     std::vector<cl::Device> * mDevices;
 
+    ///
+    /// \fn      OpenCL
+    /// \param   Ocl The OpenCL instance to copy
+    /// \brief   Copy constructor
+    /// \details Disallow the copy constructor
+    ///
+    OpenCL(const OpenCL & Ocl) {
+        // Do nothing
+        (void)Ocl;
+    }
+
+    ///
+    /// \fn      operator=
+    /// \param   Ocl The OpenCL instance to affect to the other
+    /// \return  The affected OpenCL instance
+    /// \brief   Affectation operator
+    /// \details Disallow the affectation operator
+    ///
+    OpenCL & operator=(const OpenCL & Ocl) {
+        // Do nothing
+        (void)Ocl;
+        return *this;
+    }
+
 ///
 /// \def   INIT
 /// \brief Generic macro used for initializing appropriate member
