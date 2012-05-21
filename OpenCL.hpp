@@ -26,7 +26,7 @@ namespace OpenCLWrapper {
 enum OpenCLParameters {
     TargetDevice,  ///< Select the prefered target device (CPU, GPU, ...)
     BuildOptions,  ///< Define parameters used during OpenCL kernel build
-    MaxParameters, ///< Parameter index cannot be higher
+    MaxParameters  ///< Parameter index cannot be higher
 };
 
 ///
@@ -773,6 +773,15 @@ public:
         }
 
         return Error;
+    }
+
+    ///
+    /// \fn     WaitForLastEvent
+    /// \return Any error code of cl::Event::wait
+    /// \brief  This function will block the caller until the event is done
+    ///
+    cl_int WaitForLastEvent() {
+        return mEvent.wait();
     }
 
     ///
