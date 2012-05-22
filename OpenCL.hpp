@@ -115,25 +115,33 @@ private:
         }
         cl::Platform::get(&Platforms);
 
+        //
         // First, browse for accelerator
+        //
         if (mTargetDevice == CL_DEVICE_TYPE_ALL || mTargetDevice &
             (CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_ACCELERATOR)) {
             BROWSE_DEVICES(ACCELERATOR)
         }
 
+        //
         // Then, GPU
+        //
         if (mTargetDevice == CL_DEVICE_TYPE_ALL || mTargetDevice &
             (CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU)) {
             BROWSE_DEVICES(GPU)
         }
 
+        //
         // Finally, CPU
+        //
         if (mTargetDevice == CL_DEVICE_TYPE_ALL || mTargetDevice &
             (CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_CPU)) {
             BROWSE_DEVICES(CPU)
         }
 
+        //
         // In case no device was found ensure we reset mDevices
+        //
         delete mDevices;
         mDevices = 0;
 
@@ -157,7 +165,9 @@ private:
             return CL_OUT_OF_HOST_MEMORY;
         }
 
+        //
         // In case of error ensure we reset mContext
+        //
         if (Error != CL_SUCCESS) {
             delete mContext;
             mContext = 0;
@@ -186,7 +196,9 @@ private:
             return CL_OUT_OF_HOST_MEMORY;
         }
 
+        //
         // In case of error ensure we reset mQueue
+        //
         if (Error != CL_SUCCESS) {
             delete mQueue;
             mQueue = 0;
