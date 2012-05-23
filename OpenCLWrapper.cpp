@@ -8,6 +8,12 @@
 #include <libxml/xpathInternals.h>
 #include <iostream>
 
+struct KernelDef {
+    std::string    Name;
+    std::string    File;
+    cl_device_type Target;
+};
+
 ///
 /// \fn     PrintUsage
 /// \param  ProgName Name of the executable being run
@@ -29,11 +35,12 @@ static int PrintUsage(const char * ProgName) {
 int main(int argc, char ** argv) {
     struct stat stbuf;
     xmlDocPtr XmlFile = 0;
-    std::string KernelName;
+    xmlNodePtr OldNode = 0;
     const char * ConfigFile;
-    std::string FileName = "";
+    OpenCLWrapper::OpenCL OclObject;
     xmlXPathObjectPtr XmlObject = 0;
     xmlXPathContextPtr XmlContext = 0;
+    KernelDef Kernel = {"", "", CL_DEVICE_TYPE_ALL};
 
     //
     // Check for the config file
@@ -65,7 +72,7 @@ int main(int argc, char ** argv) {
     XmlObject = xmlXPathEval(BAD_CAST"string(/kernel/@file)", XmlContext);
     if ((XmlObject != 0) && ((XmlObject->type == XPATH_STRING) &&
         (XmlObject->stringval != NULL) && (XmlObject->stringval[0] != 0))) {
-        FileName = reinterpret_cast<const char*>(XmlObject->stringval);
+        Kernel.File = reinterpret_cast<const char*>(XmlObject->stringval);
     }
 
     if (XmlObject) {
@@ -76,7 +83,7 @@ int main(int argc, char ** argv) {
     //
     // Ensure that file name is correct and that the file exists
     //
-    if (FileName == "") {
+    if (Kernel.File == "") {
         std::cout << "Kernel file name was not provided" << std::endl;
         xmlXPathFreeContext(XmlContext);
         xmlFreeDoc(XmlFile);
@@ -84,7 +91,7 @@ int main(int argc, char ** argv) {
     }
 
 
-    if (stat(FileName.c_str(), &stbuf) != 0) {
+    if (stat(Kernel.File.c_str(), &stbuf) != 0) {
         std::cout << "Kernel file was incorrect" << std::endl;
         xmlXPathFreeContext(XmlContext);
         xmlFreeDoc(XmlFile);
@@ -97,7 +104,7 @@ int main(int argc, char ** argv) {
     XmlObject = xmlXPathEval(BAD_CAST"string(/kernel/@name)", XmlContext);
     if ((XmlObject != 0) && ((XmlObject->type == XPATH_STRING) &&
         (XmlObject->stringval != NULL) && (XmlObject->stringval[0] != 0))) {
-        KernelName = reinterpret_cast<const char*>(XmlObject->stringval);
+        Kernel.Name = reinterpret_cast<const char*>(XmlObject->stringval);
     }
 
     if (XmlObject) {
@@ -108,12 +115,33 @@ int main(int argc, char ** argv) {
     //
     // Ensure that kernel name is not empty
     //
-    if (KernelName == "") {
+    if (Kernel.Name == "") {
         std::cout << "Kernel name was not provided" << std::endl;
         xmlXPathFreeContext(XmlContext);
         xmlFreeDoc(XmlFile);
         return -3;
     }
+
+    //
+    // Get target if any
+    //
+    XmlObject = xmlXPathEval(BAD_CAST"string(/kernel/target/@type)", XmlContext);
+    if ((XmlObject != 0) && ((XmlObject->type == XPATH_STRING) &&
+        (XmlObject->stringval != NULL) && (XmlObject->stringval[0] != 0))) {
+        std::string Type = reinterpret_cast<const char*>(XmlObject->stringval);
+        if (Type.compare("cpu") == 0) {
+            Kernel.Target = CL_DEVICE_TYPE_CPU;
+        } else if (Type.compare("gpu") == 0) {
+            Kernel.Target = CL_DEVICE_TYPE_GPU;
+        } else if (Type.compare("accelerator") == 0) {
+            Kernel.Target = CL_DEVICE_TYPE_ACCELERATOR;
+        }
+    }
+
+    //
+    // Immediately set target to ensure it is well used
+    //
+    OclObject.SetParameter(OpenCLWrapper::TargetDevice, Kernel.Target);
 
     //
     // Unimplemented
